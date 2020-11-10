@@ -65,13 +65,14 @@ module _ {j} {C : SemiCat {j}} where
 
 
 
-  module _ {y : Ob} (i : Hom y y) where
-  
-    idpt+eqv→left-neutral : is-idpt-eqv i → is-left-neutral i
-    idpt+eqv→left-neutral idpt+eqv f = w/o-i
+  module idpt+eqv→std {y : Ob} (i : Hom y y) (idpt+eqv : is-idpt-eqv i) where
+
+    idpt = fst idpt+eqv
+    eqv = snd idpt+eqv
+    
+    left-neutral : is-left-neutral i
+    left-neutral f = w/o-i
       where
-        idpt = fst idpt+eqv
-        eqv = snd idpt+eqv
         with-i : i ⋄ (i ⋄ f) == i ⋄ f
         with-i =
           i ⋄ (i ⋄ f)
@@ -85,21 +86,27 @@ module _ {j} {C : SemiCat {j}} where
                   (ap-is-equiv {f = λ g → i ⋄ g} (snd eqv _) (i ⋄ f) f)
                   with-i
 
-
-    -- a copy. Shorten it.
-    idpt+eqv→right-neutral : is-idpt-eqv i → is-right-neutral i
-    idpt+eqv→right-neutral idpt+eqv g =
+    -- a copy. Shortened it.
+    right-neutral : is-right-neutral i
+    right-neutral g =
       is-equiv.g
-        (ap-is-equiv (fst (snd idpt+eqv) _) (g ⋄ i) g)
-        (ass ∙ ap (λ f → g ⋄ f) (fst idpt+eqv))
-{-
-      where
-        idpt = fst idpt+eqv
-        eqv = snd idpt+eqv
-        with-i : (g ⋄ i) ⋄ i == g ⋄ i
-        with-i = ass ∙ ap (λ f → g ⋄ f) idpt
-        w/o-i : g ⋄ i == g
-        w/o-i = is-equiv.g
-                  (ap-is-equiv {f = λ f → f ⋄ i} (fst eqv _) (g ⋄ i) g)
-                  with-i
--}
+        (ap-is-equiv (fst eqv _) (g ⋄ i) g)
+        (ass ∙ ap (λ f → g ⋄ f) idpt)
+
+  module _ {y : Ob} (i : Hom y y) (std-id : is-standard-id i) where
+
+    l-ntrl = fst std-id
+    r-ntrl = snd std-id
+
+    eqv : is-eqv i
+    eqv = (λ z → is-eq (λ g → g ⋄ i) (λ h → h) r-ntrl r-ntrl)
+          ,
+          λ x → is-eq (λ f → i ⋄ f) (λ h → h) l-ntrl l-ntrl
+
+    idpt : is-idempotent i
+    idpt = l-ntrl i
+
+  -- NOW, we have everything up to Lemma 15. Fix notation. Clean up.
+
+  idpt+eqv→std-id : ∀{y} → (i : Hom y y) → is-idpt-eqv i → is-standard-id i
+  idpt+eqv→std-id i idpt+eqv = idpt+eqv→std.left-neutral i idpt+eqv , idpt+eqv→std.right-neutral i idpt+eqv
