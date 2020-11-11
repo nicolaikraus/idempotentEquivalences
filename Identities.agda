@@ -152,6 +152,13 @@ module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
     i₂
       =∎
 
+  -- A useful lemma: equivalences satisfy 2-out-of-3 (we only show one specific instance)
+
+  eqv-2-out-of-3 : ∀{x y z} (f : Hom x y) (g : Hom y z)
+    → is-eqv g → is-eqv (g ⋄ f) → is-eqv f
+  eqv-2-out-of-3 f g (p₁ , p₂) (q₁ , q₂) = {!!} , {!!}
+
+
   {- Given an equivalence, we can define an idempotent equivalence. -}
 
   module I {y z} (e : Hom y z) (p : is-eqv e) where
@@ -183,8 +190,14 @@ module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
       f
         =∎
 
-    r-ntrl : is-right-neutral I
-    r-ntrl = {!!}
+--    r-ntrl : is-right-neutral I
+--    r-ntrl = {!!}
+
+    -- solution via 2-out-of-3
+    I-is-idpt+eqv : is-idpt+eqv I
+    I-is-idpt+eqv = left-neutral→idempotent
+      I l-ntrl ,
+      eqv-2-out-of-3 I e p (transport is-eqv (! e⋄I) p)
 
   {- If an endomorphism e is an equivalence, its idempotence is equivalent to its equality to I(e).
      TODO Lemma 19.
@@ -204,3 +217,7 @@ module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
         ≃∎
 
 
+  -- now the main theorem (Thm 17), namely that "having idempotent equivalences" is a proposition.
+
+  having-idpt+eqv-is-prop : is-prop has-idempot-eqvs
+  having-idpt+eqv-is-prop = {!!}
