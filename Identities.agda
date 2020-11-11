@@ -219,5 +219,34 @@ module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
 
   -- now the main theorem (Thm 17), namely that "having idempotent equivalences" is a proposition.
 
+  module uniqueness-of-idpt+eqv (y : Ob) (i₀ : Hom y y) (idpt+eqv : is-idpt+eqv i₀) where
+
+    idpt = fst idpt+eqv
+    eqv = snd idpt+eqv
+
+    idpt-to-=i₀ =
+      Σ (Hom y y) (λ i → is-idpt+eqv i)
+        ≃⟨ {!!} ⟩
+      Σ (Hom y y) (λ i → is-idempotent i × is-eqv i)
+        ≃⟨ {!!} ⟩
+      {!!}
+        ≃⟨ {!!} ⟩
+      {!!}
+        ≃⟨ {!!} ⟩
+      {!!}
+        ≃⟨ {!!} ⟩
+      {!!}
+        ≃∎
+        
+
+
+  {-  
+  module idpt+eqv→std {y : Ob} (i : Hom y y) (idpt+eqv : is-idpt+eqv i) where
+
+    idpt = fst idpt+eqv
+    eqv = snd idpt+eqv
+-}
   having-idpt+eqv-is-prop : is-prop has-idempot-eqvs
-  having-idpt+eqv-is-prop = {!!}
+  having-idpt+eqv-is-prop = {!Σ-emap-r!}
+
+
