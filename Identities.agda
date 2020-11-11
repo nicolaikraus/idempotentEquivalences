@@ -110,8 +110,11 @@ module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
         (ap-is-equiv (fst eqv _) (g ⋄ i) g)
         (ass ∙ ap (λ f → g ⋄ f) idpt)
 
-
-  
+  -- A very simple observation:
+  -- Any left-neutral endomorphism is idempotent.
+  left-neutral→idempotent : ∀{y} (f : Hom y y) → is-left-neutral f → is-idempotent f
+  left-neutral→idempotent f l-ntrl = l-ntrl f
+  -- (Of course, the same is true for right-neutral endomorphisms.)
 
   {- Next, we show that a standard identity is an idempotent equivalence. -}
   module std→idpt+eqv {y : Ob} (i : Hom y y) (std-id : is-standard-id i) where
@@ -125,7 +128,7 @@ module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
           λ x → is-eq (λ f → i ⋄ f) (λ h → h) l-ntrl l-ntrl
 
     idpt : is-idempotent i
-    idpt = l-ntrl i
+    idpt = left-neutral→idempotent i l-ntrl
 
   {- Now, we have everything in place to state Lemma 15 of TODO.
      Iff (⇔) just means "maps in both directions". -}
@@ -151,14 +154,53 @@ module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
 
   {- Given an equivalence, we can define an idempotent equivalence. -}
 
-  module _ {x y} (e : Hom x y) (p : is-eqv e) where
+  module I {y z} (e : Hom y z) (p : is-eqv e) where
 
-    I : Hom x x
-    I = is-equiv.g (snd p x) e
+    e⁻¹⋄- : ∀{x} → Hom x z → Hom x y
+    e⁻¹⋄- = is-equiv.g (snd p _)
 
+    e⋄- : ∀{x} → Hom x y → Hom x z
+    e⋄- = _⋄_ e
+
+    I : Hom y y
+    I = e⁻¹⋄- e
+
+    -- Easy: I right neutral for e
+    e⋄I : e ⋄ I == e
+    e⋄I = is-equiv.f-g (snd p _) e
+
+    -- Also easy (but more work): I left neutral in general
     l-ntrl : is-left-neutral I
-    l-ntrl = {!!}
-
+    l-ntrl f =
+      I ⋄ f
+        =⟨ ! (is-equiv.g-f (snd p _) _) ⟩
+      e⁻¹⋄- (e⋄- (I ⋄ f))
+        =⟨ ap e⁻¹⋄- (! ass) ⟩
+      e⁻¹⋄- ((e ⋄ I) ⋄ f)
+        =⟨ ap (λ g → e⁻¹⋄- (g ⋄ f)) e⋄I ⟩
+      e⁻¹⋄- (e ⋄ f)
+        =⟨ is-equiv.g-f (snd p _) _ ⟩
+      f
+        =∎
 
     r-ntrl : is-right-neutral I
-    r-ntrl = ?
+    r-ntrl = {!!}
+
+  {- If an endomorphism e is an equivalence, its idempotence is equivalent to its equality to I(e).
+     TODO Lemma 19.
+  -}
+  module e-vs-I {y : Ob} (e : Hom y y) (p : is-eqv e) where
+    open I
+  
+    e-I-idpt : (e == I e p) ≃ is-idempotent e
+    e-I-idpt = --  {!ap-equiv (e⋄- e p , ?) e (I e p)!} --  {!ap-equiv {f = e⋄- e p} ? e (I e p)!} -- {!!}
+      e == I e p
+        ≃⟨ ap-equiv (e⋄- e p , snd p _) e (I e p) ⟩
+      e ⋄ e == e ⋄ I e p
+        ≃⟨ transport (λ expr → (e ⋄ e == e ⋄ I e p) ≃ (e ⋄ e == expr)) (e⋄I e p) (ide _) ⟩ 
+      e ⋄ e == e
+        ≃⟨ ide _ ⟩
+      is-idempotent e
+        ≃∎
+
+
