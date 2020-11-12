@@ -291,10 +291,7 @@ module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
       Σ (Hom y y) (λ i → is-idpt+eqv i)
         ≃⟨ ide {i = j} _ ⟩ -- unfolding, does nothing
       Σ (Hom y y) (λ i → is-idpt i × is-eqv i)
-        ≃⟨ Σ-emap-r --{A = Hom y y}
-                    --{B = λ i → is-idpt i × is-eqv i}
-                    --{C = λ i → is-eqv i × is-idpt i}
-                    (λ i → ×-comm) ⟩
+        ≃⟨ Σ-emap-r (λ i → ×-comm) ⟩
       Σ (Hom y y) (λ i → Σ (is-eqv i) λ eqv → (is-idpt i))
         ≃⟨ Σ-emap-r (λ i → Σ-emap-r λ eqv → e-I-idpt i eqv ⁻¹) ⟩
       Σ (Hom y y) (λ i → Σ (is-eqv i) λ eqv → i == I i eqv)
