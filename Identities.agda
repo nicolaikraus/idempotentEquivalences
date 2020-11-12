@@ -166,10 +166,33 @@ module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
   eqv-2-out-of-3 : ∀{w x y} (f : Hom w x) (g : Hom x y)
     → is-eqv g → is-eqv (g ⋄ f) → is-eqv f
   eqv-2-out-of-3 {w} {x} {y} f g (p₁ , p₂) (q₁ , q₂) =
-    {!λ v → f⋄-is-eqv!}
+    (λ _ → -⋄f-is-eqv)
     ,
-    λ _ → f⋄-is-eqv
+    (λ _ → f⋄-is-eqv)
       where
+      
+      -- first part
+      -⋄f : {y : Ob} → Hom x y → Hom w y
+      -⋄f = λ h → h ⋄ f
+      -⋄g⁻¹ : {z : Ob} → Hom x z → Hom y z
+      -⋄g⁻¹ = is-equiv.g (p₁ _)
+      -⋄gf : {z : Ob} → Hom y z → Hom w z
+      -⋄gf = λ h → h ⋄ (g ⋄ f)
+      eq' : ∀{z} → -⋄gf {z} ∘ -⋄g⁻¹ == -⋄f {z}
+      eq' {z} = λ= (λ h →
+        (-⋄g⁻¹ h) ⋄ (g ⋄ f)
+          =⟨ ! ass ⟩
+        ((-⋄g⁻¹ h) ⋄ g) ⋄ f
+          =⟨ ap (λ k → k ⋄ f) (is-equiv.f-g (p₁ _) _) ⟩
+        h ⋄ f
+          =∎
+        )
+      -⋄g⁻¹-equiv : ∀{z} → is-equiv (-⋄g⁻¹ {z})
+      -⋄g⁻¹-equiv = is-equiv-inverse (p₁ _)
+      -⋄f-is-eqv : ∀{z} → is-equiv (-⋄f {z})
+      -⋄f-is-eqv {z} = transport is-equiv eq' (q₁ _ ∘ise -⋄g⁻¹-equiv)
+
+      -- second part
       f⋄- : {v : Ob} → Hom v w → Hom v x
       f⋄- = λ h → f ⋄ h
       g⁻¹⋄- : {v : Ob} → Hom v y → Hom v x
@@ -195,21 +218,6 @@ module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
       f⋄-is-eqv {v} = transport is-equiv eq (g⁻¹⋄-equiv ∘ise q₂ _)
       
       
-      -⋄f : {y : Ob} → Hom x y → Hom w y
-      -⋄f = λ h → h ⋄ f
-      -⋄g⁻¹ : {z : Ob} → Hom x z → Hom y z
-      -⋄g⁻¹ = is-equiv.g (p₁ _)
-      -⋄gf : {z : Ob} → Hom y z → Hom w z
-      -⋄gf = λ h → h ⋄ (g ⋄ f)
-      eq' : ∀{z} → -⋄gf {z} ∘ -⋄g⁻¹ == -⋄f {z}
-      eq' {z} = λ= (λ h →
-        (-⋄g⁻¹ h) ⋄ (g ⋄ f)
-          =⟨ ! ass ⟩
-        ((-⋄g⁻¹ h) ⋄ g) ⋄ f
-          =⟨ ap (λ k → k ⋄ f) (is-equiv.f-g (p₁ _) _) ⟩
-        h ⋄ f
-          =∎
-        )
 
   {- Given an equivalence, we can define an idempotent equivalence. -}
 
