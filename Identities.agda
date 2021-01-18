@@ -1,7 +1,7 @@
 {- 
            IDENTITIES VIA IDEMPOTENT EQUIVALENCES
                   complementing the paper
-   Internal ∞ -Categorical Models of Dependent Type Theory
+   Internal ∞-Categorical Models of Dependent Type Theory
 
                     Nicolai Kraus, 2020
 
