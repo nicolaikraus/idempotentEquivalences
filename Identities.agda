@@ -1,25 +1,59 @@
-{- Nicolai Kraus
+{- 
+           IDENTITIES VIA IDEMPOTENT EQUIVALENCES
+                  complementing the paper
+   Internal ∞ -Categorical Models of Dependent Type Theory
+
+                    Nicolai Kraus, 2020
+
+Summary. The standard definition of a semicategory consists
+of objects, morphisms, composition, and associativity. How
+can we say that a given semicategory has identities, i.e. is
+a category? The standard answer is to say that the
+semicategory has identities which satisfy left-neutrality and
+right-neutrality.
+
+In this short note, I present another definition of the
+statement "has-identities" (a.k.a. "is-a-category").
+The motivation is that I want "is-a-category" to be a
+*property* of a semicategory rather than *data*, i.e. I want
+it to be a proposition a.k.a. proof-irrelevant. For a semi-
+category where the morphisms form a set, this is already the
+case for the standard answer above. However, without this
+additional assumption, the standard answer is data.
+
+My new definition of "is-a-category" is "for every object x,
+there is an endomorphism i ∈ Hom(x,x) such that i is
+an idempotent equivalence". This Agda file shows that this
+is a propositional property. I also show below that a semi-
+category has idempotent equivalences if and only if it has
+standard identities. 
+
+The Agda code can be type-checked with Agda 2.6.1 and makes
+use of the library HoTT-Agda, using Andrew Swan's fork that
+is 2.6.1-compatible:
+https://github.com/awswan/HoTT-Agda/tree/agda-2.6.1-compatible
 -}
+   
 
 {-# OPTIONS --without-K #-}
 
 module Identities where
 open import HoTT public
-open import Iff public
+open import Iff
 
-{-  A *wild semicategory*, sometimes also known as 
-    a *(wild) semigroupoid*, consists of:
+{-  A *wild semicategory*, sometimes also known as a *wild 
+    semigroupoid*, consists of:
       - Ob: a type of objects;
       - Hom: a type family of morphisms (for increased
-             generality possibly in another universe
-             than Ob, but it doesn't matter)
+        generality possibly in another universe than Ob, but
+        it doesn't matter);
       - and an associative binary operation _⋄_.
-    This is of course just a "category without
-    identities". Note that we do NOT ask for set-
-    truncation!
+    This is of course just a "category without identities". 
+    Note that we do *NOT* ask for set-truncation; Ob and Hom
+    are arbitrary types/type families!
 -}
 
-record SemiCat {j₁ j₂} : Type (lsucc (lmax j₁ j₂)) where
+record SemiCategory j₁ j₂ : Type (lsucc (lmax j₁ j₂)) where
   infixr 40 _⋄_
   field
     Ob  : Type j₁
@@ -28,64 +62,89 @@ record SemiCat {j₁ j₂} : Type (lsucc (lmax j₁ j₂)) where
     ass : ∀ {x y z w} {f : Hom z w} {g : Hom y z} {h : Hom x y}
         → (f ⋄ g) ⋄ h == f ⋄ (g ⋄ h)
 
-{-  For the rest of this file, we assume that C is a 
-    given fixed "wild" semicategory. This means we work
-    inside a module which fixes C.
+{-  For the rest of this file, we assume that C is a given
+    fixed wild semicategory. We work inside a module which
+    fixes C.
 -}
 
-module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
-  open SemiCat C
-
+module _ {j₁ j₂} (C : SemiCategory j₁ j₂) where
+  open SemiCategory C
   j = lmax j₁ j₂
 
-  {- A "standard identity" is a morphism which is left and right
-     neutral. This is the normal, well-known definition. -}
+  {- A "standard identity" is a morphism which is left and 
+     right neutral. This is the normal, well-known definition.
+  -}
 
   module _ {y : Ob} (i : Hom y y) where
     is-left-neutral = {x : Ob} (f : Hom x y) → i ⋄ f == f
     is-right-neutral = {z : Ob} (g : Hom y z) → g ⋄ i == g
     is-standard-id = is-left-neutral × is-right-neutral
 
-  has-standard-ids = (x : Ob) → Σ (Hom x x) is-standard-id
+  {- We say that a semicategory (here, the semicategory C)
+     is a *standard category* if every object comes with
+     a morphism which is left- and right-neutral. This is
+     the usual definition of what it means to "have
+     identities". -}
+     
+  is-standard-category = (x : Ob) → Σ (Hom x x) is-standard-id
 
-  {- The problem with these identities is that "having standard
-     identities" is not a propositional property: it is structure,
-     i.e. C can have standard identities in multiple different ways.
-     This makes "having standard identities" ill-behaved, as 
-     demonstrated in TODO of the paper TODO.
+  {- The problem with these identities is that "having
+     standard identities" is not a propositional property: 
+     it is structure, i.e. C can have standard identities in
+     multiple different ways. This makes "having standard 
+     identities" ill-behaved, as demonstrated in the paper
+     (see Example 9, initial model in the wild/incoherent
+     setting).
 
-     We now develop a better alternative definition of identities,
-     namely *idempotent equivalences*, and this will lead to a
-     propositional property.
+     We now develop an alternative, and better, definition
+     of identities, namely *idempotent equivalences*, and 
+     this will lead to a propositional property.
   -}
 
   is-idpt : {x : Ob} (f : Hom x x) → Type j₂
   is-idpt f = f ⋄ f == f
-  {- Note: "being idempotent" is not necessarily a proposition
-     (as 'Hom x x' might not be a set). -}
+  
+  {- Note: `is-idpt f` a.k.a. "f is idempotent" is not
+     necessarily a proposition (as 'Hom x x' might not be a
+     set). -}
 
   is-eqv : {x y : Ob} (g : Hom x y) → Type j
   is-eqv {x} {y} g =   ((z : Ob) → is-equiv λ (h : Hom y z) → h ⋄ g)
                      × ((w : Ob) → is-equiv λ (f : Hom w x) → g ⋄ f)
-  {- Note: "being an equivalence" is a proposition (inherited property
-     from equivalences of types). -}
+                     
+  {- Note: `is-eqv g` a.k.a. "g is an equivalence" is a
+     proposition. This is automatic, as `is-equiv` (the
+     analogous property for types) is a proposition. -}
 
   is-idpt+eqv : {x : Ob} (i : Hom x x) → Type j
   is-idpt+eqv i = is-idpt i × is-eqv i
-  {- Note: "being idempotent and an equivalence" is not a proposition.
-     E.g. in the wild semicategory of types and functions, the identity
-     on the circle S¹ is an idempotent equivalence in ℤ-many ways. -}
+  
+  {- Note: `is-idpt+eqv i` a.k.a. "being idempotent and an 
+     equivalence" is still not not a proposition!
+     E.g. in the wild semicategory of types and functions,
+     the identity on the circle S¹ is an idempotent 
+     equivalence in ℤ-many ways. -}
 
-  has-idpt-eqvs = (x : Ob) → Σ (Hom x x) is-idpt+eqv
-  {- "Having idempotent equivalences" *is* a proposition, but this is
-     non-trivial and will be shown later! -}
+  {- I define "being a good category" as a property of a 
+     semicategory. The property states that each object
+     comes with an idempotent equivalence. -}
 
-  {- First, we show that an idempotent equivalence is also a standard
-     identity -}
+  is-good-category = (x : Ob) → Σ (Hom x x) is-idpt+eqv
+  
+  {- Note: "being a category" a.k.a. "having idempotent
+     equivalences" *is* a proposition, but this is not
+     trivial. The main goal of the current file is to prove
+     this result.
+
+     First, we show that an idempotent equivalence is also a
+     standard identity. -}
+     
   module idpt+eqv→std {y : Ob} (i : Hom y y) (idpt+eqv : is-idpt+eqv i) where
 
     idpt = fst idpt+eqv
     eqv = snd idpt+eqv
+
+    {- The idempotent equivalence i is left neutral: -}
     
     left-neutral : is-left-neutral i
     left-neutral f = w/o-i
@@ -103,20 +162,30 @@ module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
                   (ap-is-equiv {f = λ g → i ⋄ g} (snd eqv _) (i ⋄ f) f)
                   with-i
 
-    -- A copy; shortened version of the above proof.
+    {- The proof of right neutrality is completely symmetric
+       to the above. Here is the shortened version: -}
+       
     right-neutral : is-right-neutral i
     right-neutral g =
       is-equiv.g
         (ap-is-equiv (fst eqv _) (g ⋄ i) g)
         (ass ∙ ap (λ f → g ⋄ f) idpt)
 
-  -- A very simple observation:
-  -- Any left-neutral endomorphism is idempotent.
+  {- The above shows that an idempotent equivalence is a
+     standard equivalence. A "summary statement" will be given
+     later. 
+     We start the opposite direction with very simple
+     observation: Any left-neutral endomorphism is idempotent. -}
+     
   left-neutral→idempotent : ∀{y} (f : Hom y y) → is-left-neutral f → is-idpt f
   left-neutral→idempotent f l-ntrl = l-ntrl f
-  -- (Of course, the same is true for right-neutral endomorphisms.)
+  
+  {- Of course, the same is true for right-neutral
+     endomorphisms, but the above suffices for us.
 
-  {- Next, we show that a standard identity is an idempotent equivalence. -}
+     We are now ready to prove that a standard identity is an
+     idempotent equivalence. -}
+     
   module std→idpt+eqv {y : Ob} (i : Hom y y) (std-id : is-standard-id i) where
 
     l-ntrl = fst std-id
@@ -130,8 +199,10 @@ module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
     idpt : is-idpt i
     idpt = left-neutral→idempotent i l-ntrl
 
-  {- Now, we have everything in place to state Lemma 15 of TODO.
-     Iff (⇔) just means "maps in both directions". -}
+  {- "Summary statement":
+     We now have everything in place to state Lemma TODO (15?) of
+     the paper. An endomorphism `i` is an idempotent equivalence
+     if and only if it is a standard identity. -}
 
   idpt+eqv⇔std : ∀{y} → (i : Hom y y) → is-idpt+eqv i ⇔ is-standard-id i
   idpt+eqv⇔std i = (⇒ , ⇐)
@@ -141,7 +212,8 @@ module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
       ⇐ : is-standard-id i → is-idpt+eqv i
       ⇐ p = std→idpt+eqv.idpt i p , std→idpt+eqv.eqv i p
 
-  {- Idempotent equivalences are unique: Corollary 16 -}
+  {- This implies that any two idempotent equivalences are equal
+     (Corollary TODO (16?)). -}
 
   idpt+eqv-unique : ∀{y} → (i₁ i₂ : Hom y y) → is-idpt+eqv i₁ → is-idpt+eqv i₂ → i₁ == i₂
   idpt+eqv-unique i₁ i₂ p₁ p₂ =
@@ -152,16 +224,12 @@ module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
     i₂
       =∎
 
-  -- A useful lemma: equivalences satisfy 2-out-of-3 (we only show one specific instance)
-
-{-
-  -- We first show this for "real" equivalences between types
-  equiv-2-out-of-3 : ∀ {j₁ j₂ j₃} {X : Type j₁} {Y : Type j₂} {Z : Type j₃}
-    (f : X → Y) (g : Y → Z) (h : X → Z)
-    → h == g ∘ f
-    → is-equiv g → is-equiv h → is-equiv f
-  equiv-2-out-of-3 = {!!}
--}
+  {- A useful property is 2-out-of-3 for equivalences:
+     If we have g ∘ f == h and two out of the three maps
+     {f, g, h} are equivalences, then so is the third.
+     Here, we only show (and need) one instance, namely
+     that it suffices if g and h are equivalences. 
+     This is easy but a bit tedious. -}
 
   eqv-2-out-of-3 : ∀{w x y} (f : Hom w x) (g : Hom x y)
     → is-eqv g → is-eqv (g ⋄ f) → is-eqv f
@@ -171,7 +239,7 @@ module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
     (λ _ → f⋄-is-eqv)
       where
       
-      -- first part
+      {- first part -}
       -⋄f : {y : Ob} → Hom x y → Hom w y
       -⋄f = λ h → h ⋄ f
       -⋄g⁻¹ : {z : Ob} → Hom x z → Hom y z
@@ -192,7 +260,7 @@ module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
       -⋄f-is-eqv : ∀{z} → is-equiv (-⋄f {z})
       -⋄f-is-eqv {z} = transport is-equiv eq' (q₁ _ ∘ise -⋄g⁻¹-equiv)
 
-      -- second part
+      {- second part -}
       f⋄- : {v : Ob} → Hom v w → Hom v x
       f⋄- = λ h → f ⋄ h
       g⁻¹⋄- : {v : Ob} → Hom v y → Hom v x
@@ -216,10 +284,12 @@ module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
       g⁻¹⋄-equiv {v} = is-equiv-inverse (p₂ _)
       f⋄-is-eqv : ∀{v} → is-equiv (f⋄- {v})
       f⋄-is-eqv {v} = transport is-equiv eq (g⁻¹⋄-equiv ∘ise q₂ _)
-      
-      
 
-  {- Given an equivalence, we can define an idempotent equivalence. -}
+  {- Given an equivalence, we can define an idempotent
+     equivalence. This construction was already presented in
+     "Higher Univalent Categories via Complete Semi-Segal Types"
+     (Capriotti-Kraus, POPL'18) and is motivated by work of
+     Harpaz and Lurie in higher dimensional category theory. -}
 
   module I {y z} (e : Hom y z) (p : is-eqv e) where
 
@@ -232,11 +302,17 @@ module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
     I : Hom y y
     I = e⁻¹⋄- e
 
-    -- Easy: I right neutral for e
+    {- In comments, we write I(e) for the I constructed above
+       (e is a module parameter).
+
+       It is easy to see that I(e) is right neutral for e: -}
+    
     e⋄I : e ⋄ I == e
     e⋄I = is-equiv.f-g (snd p _) e
 
-    -- Also easy (but more work): I left neutral in general
+    {- Also easy (but more work): 
+       I is left neutral in general. -}
+       
     l-ntrl : is-left-neutral I
     l-ntrl f =
       I ⋄ f
@@ -250,18 +326,20 @@ module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
       f
         =∎
 
---    r-ntrl : is-right-neutral I
---    r-ntrl = {!!}
+    {- We do not need the other analogous properties. This
+       is enough to see that I is an idempotent equivalence. -}
 
-    -- solution via 2-out-of-3
     I-is-idpt+eqv : is-idpt+eqv I
     I-is-idpt+eqv = left-neutral→idempotent
       I l-ntrl ,
       eqv-2-out-of-3 I e p (transport is-eqv (! e⋄I) p)
 
-  {- If an endomorphism e is an equivalence, its idempotence is equivalent to its equality to I(e).
-     TODO Lemma 19.
+  {- If an endomorphism e is an equivalence, then it is
+     idempotent if and only if it is equal to I(e); and
+     this connection even forms an equivalence of types
+     (Lemma 19?).
   -}
+  
   module e-vs-I {y : Ob} (e : Hom y y) (p : is-eqv e) where
     open I
   
@@ -276,8 +354,10 @@ module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
       is-idpt e
         ≃∎
 
-
-  -- now the main theorem (Thm 17), namely that "having idempotent equivalences" is a proposition.
+  {- Finally, put all the previous lemmas together to show that
+     the type of idempotent equivalences is a proposition. We do
+     this by showing that, if we assume that this type has one 
+     element i₀, then i₀ is the only element. -}
 
   module unique (y : Ob) (i₀ : Hom y y) (idpt+eqv₀ : is-idpt+eqv i₀) where
 
@@ -287,9 +367,14 @@ module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
     idpt₀ = fst idpt+eqv₀
     eqv₀ = snd idpt+eqv₀
 
+    {- Using a chain of equivalences, we show that the type
+       of idempotent equivalences is trivial (given one
+       single idempotent equivalence, see the module
+       parameter). -}
+
     idpt-to-=i₀ =
       Σ (Hom y y) (λ i → is-idpt+eqv i)
-        ≃⟨ ide {i = j} _ ⟩ -- unfolding, does nothing
+        ≃⟨ ide {i = j} _ ⟩
       Σ (Hom y y) (λ i → is-idpt i × is-eqv i)
         ≃⟨ Σ-emap-r (λ i → ×-comm) ⟩
       Σ (Hom y y) (λ i → Σ (is-eqv i) λ eqv → (is-idpt i))
@@ -306,16 +391,38 @@ module _ {j₁ j₂} {C : SemiCat {j₁} {j₂}} where
       (Σ Unit λ _ → is-eqv i₀)
         ≃⟨ Σ₁-Unit ⟩
       is-eqv i₀
-        ≃⟨ contr-equiv-Unit (inhab-prop-is-contr eqv₀) ⟩ -- proof that is-eqv is prop is inferred!
+        ≃⟨ contr-equiv-Unit (inhab-prop-is-contr eqv₀) ⟩
       Unit
         ≃∎
 
-    -- in other words: the type of idempotent equivalences on y is contractible (note that the module assumes an idempotent equivalence).
+    {- In other words, the type of idempotent equivalences 
+       is contractible. -}
+       
     unique-idpt+eqv : is-contr (Σ (Hom y y) (λ i → is-idpt+eqv i))
     unique-idpt+eqv = equiv-preserves-level (idpt-to-=i₀ ⁻¹)
 
-  -- therefore: "having idempotent equivalences" is a propositional property of the wild semicategory C.
-  -- Theorem 17
-  having-idpt+eqv-is-prop : is-prop has-idpt-eqvs
-  having-idpt+eqv-is-prop = inhab-to-contr-is-prop λ idpt+eqvs →
-    WeakFunext.weak-λ= λ y → unique.unique-idpt+eqv y (fst(idpt+eqvs y)) (snd(idpt+eqvs y)) 
+
+{-                     THEOREMS
+                       ========
+
+   With the help of the above lemmas, we show our main
+   results:
+
+   (1) A semicategory is a good category if and only if
+       it is a standard category.
+
+   (2) "Being a good category" is a propositional (proof-
+       irrelevant) property of a semicategory.
+-}
+
+good-iff-standard : ∀ {j₁ j₂} (C : SemiCategory j₁ j₂) → is-good-category C ⇔ is-standard-category C
+good-iff-standard C = ⇒ , ⇐
+  where
+  ⇒ : is-good-category C → is-standard-category C
+  ⇒ igc x = fst (igc x) , fst (idpt+eqv⇔std C _) (snd (igc x))
+  ⇐ : is-standard-category C → is-good-category C
+  ⇐ isc x = fst (isc x) , snd (idpt+eqv⇔std C _) (snd (isc x))
+
+goodness-is-prop : ∀ {j₁ j₂} (C : SemiCategory j₁ j₂) → is-prop (is-good-category C)
+goodness-is-prop C = inhab-to-contr-is-prop λ idpt+eqvs →
+  WeakFunext.weak-λ= λ y → unique.unique-idpt+eqv C y (fst(idpt+eqvs y)) (snd(idpt+eqvs y)) 
