@@ -3,8 +3,6 @@
                   complementing the paper
    Internal ∞-Categorical Models of Dependent Type Theory
 
-                    Nicolai Kraus, 2020
-
 Summary. The standard definition of a semicategory consists
 of objects, morphisms, composition, and associativity. How
 can we say that a given semicategory has identities, i.e. is
@@ -212,10 +210,10 @@ module _ {j₁ j₂} (C : SemiCategory j₁ j₂) where
       ⇐ : is-standard-id i → is-idpt+eqv i
       ⇐ p = std→idpt+eqv.idpt i p , std→idpt+eqv.eqv i p
 
-  {- This implies that any two idempotent equivalences are equal
-     (Corollary TODO (16?)). -}
+  {- This implies that any two idempotent equivalences are equal. -}
 
-  idpt+eqv-unique : ∀{y} → (i₁ i₂ : Hom y y) → is-idpt+eqv i₁ → is-idpt+eqv i₂ → i₁ == i₂
+  idpt+eqv-unique : ∀{y} → (i₁ i₂ : Hom y y) →
+                    is-idpt+eqv i₁ → is-idpt+eqv i₂ → i₁ == i₂
   idpt+eqv-unique i₁ i₂ p₁ p₂ =
     i₁
       =⟨ ! (idpt+eqv→std.right-neutral i₂ p₂ i₁) ⟩
@@ -337,7 +335,6 @@ module _ {j₁ j₂} (C : SemiCategory j₁ j₂) where
   {- If an endomorphism e is an equivalence, then it is
      idempotent if and only if it is equal to I(e); and
      this connection even forms an equivalence of types
-     (Lemma 19?).
   -}
   
   module e-vs-I {y : Ob} (e : Hom y y) (p : is-eqv e) where
@@ -348,7 +345,8 @@ module _ {j₁ j₂} (C : SemiCategory j₁ j₂) where
       e == I e p
         ≃⟨ ap-equiv (e⋄- e p , snd p _) e (I e p) ⟩
       e ⋄ e == e ⋄ I e p
-        ≃⟨ transport (λ expr → (e ⋄ e == e ⋄ I e p) ≃ (e ⋄ e == expr)) (e⋄I e p) (ide _) ⟩ 
+        ≃⟨ transport (λ expr →
+           (e ⋄ e == e ⋄ I e p) ≃ (e ⋄ e == expr)) (e⋄I e p) (ide _) ⟩ 
       e ⋄ e == e
         ≃⟨ ide _ ⟩
       is-idpt e
@@ -381,13 +379,17 @@ module _ {j₁ j₂} (C : SemiCategory j₁ j₂) where
         ≃⟨ Σ-emap-r (λ i → Σ-emap-r λ eqv → e-I-idpt i eqv ⁻¹) ⟩
       Σ (Hom y y) (λ i → Σ (is-eqv i) λ eqv → i == I i eqv)
         ≃⟨ Σ-emap-r (λ i → Σ-emap-r λ p → coe-equiv
-             (ap (λ i' → (i == i')) (idpt+eqv-unique (I i p) i₀ (I-is-idpt+eqv i p) idpt+eqv₀))) ⟩ 
+             (ap (λ i' → (i == i')) (
+                 idpt+eqv-unique (I i p) i₀ (I-is-idpt+eqv i p) idpt+eqv₀))) ⟩ 
       Σ (Hom y y) (λ i → Σ (is-eqv i) λ _ → i == i₀)
         ≃⟨ Σ-emap-r (λ i → ×-comm) ⟩
       Σ (Hom y y) (λ i → Σ (i == i₀) λ _ → (is-eqv i))
         ≃⟨ Σ-assoc ⁻¹ ⟩
       (Σ (Σ (Hom y y) (λ i → (i == i₀))) λ ip → (is-eqv (fst ip)))
-        ≃⟨ Σ-emap-l {A = Unit} {B = Σ (Hom y y) λ i → (i == i₀)} (λ ip → (is-eqv (fst ip))) (contr-equiv-Unit (pathto-is-contr i₀) ⁻¹) ⁻¹ ⟩
+        ≃⟨ Σ-emap-l {A = Unit}
+                    {B = Σ (Hom y y) λ i → (i == i₀)}
+                    (λ ip → (is-eqv (fst ip)))
+                    (contr-equiv-Unit (pathto-is-contr i₀) ⁻¹) ⁻¹ ⟩
       (Σ Unit λ _ → is-eqv i₀)
         ≃⟨ Σ₁-Unit ⟩
       is-eqv i₀
@@ -415,7 +417,8 @@ module _ {j₁ j₂} (C : SemiCategory j₁ j₂) where
        irrelevant) property of a semicategory.
 -}
 
-good-iff-standard : ∀ {j₁ j₂} (C : SemiCategory j₁ j₂) → is-good-category C ⇔ is-standard-category C
+good-iff-standard : ∀ {j₁ j₂} (C : SemiCategory j₁ j₂) →
+                    is-good-category C ⇔ is-standard-category C
 good-iff-standard C = ⇒ , ⇐
   where
   ⇒ : is-good-category C → is-standard-category C
