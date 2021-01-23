@@ -198,9 +198,9 @@ module _ {j₁ j₂} (C : SemiCategory j₁ j₂) where
     idpt = left-neutral→idempotent i l-ntrl
 
   {- "Summary statement":
-     We now have everything in place to state Lemma TODO (15?) of
-     the paper. An endomorphism `i` is an idempotent equivalence
-     if and only if it is a standard identity. -}
+     We now have everything in place to state that an
+     endomorphism `i` is an idempotent equivalence if and
+     only if it is a standard identity. -}
 
   idpt+eqv⇔std : ∀{y} → (i : Hom y y) → is-idpt+eqv i ⇔ is-standard-id i
   idpt+eqv⇔std i = (⇒ , ⇐)
