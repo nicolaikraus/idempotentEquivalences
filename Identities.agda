@@ -1,7 +1,7 @@
 {- 
-           IDENTITIES VIA IDEMPOTENT EQUIVALENCES
-                  complementing the paper
-   Internal ∞-Categorical Models of Dependent Type Theory
+         IDENTITIES VIA IDEMPOTENT EQUIVALENCES
+                complementing the paper
+ Internal ∞-Categorical Models of Dependent Type Theory
 
 Summary. The standard definition of a semicategory consists
 of objects, morphisms, composition, and associativity. How
@@ -137,7 +137,8 @@ module _ {j₁ j₂} (C : SemiCategory j₁ j₂) where
      First, we show that an idempotent equivalence is also a
      standard identity. -}
      
-  module idpt+eqv→std {y : Ob} (i : Hom y y) (idpt+eqv : is-idpt+eqv i) where
+  module idpt+eqv→std {y : Ob} (i : Hom y y)
+                      (idpt+eqv : is-idpt+eqv i) where
 
     idpt = fst idpt+eqv
     eqv = snd idpt+eqv
@@ -175,7 +176,8 @@ module _ {j₁ j₂} (C : SemiCategory j₁ j₂) where
      We start the opposite direction with very simple
      observation: Any left-neutral endomorphism is idempotent. -}
      
-  left-neutral→idempotent : ∀{y} (f : Hom y y) → is-left-neutral f → is-idpt f
+  left-neutral→idempotent : ∀{y} (f : Hom y y) →
+                                 is-left-neutral f → is-idpt f
   left-neutral→idempotent f l-ntrl = l-ntrl f
   
   {- Of course, the same is true for right-neutral
@@ -184,7 +186,8 @@ module _ {j₁ j₂} (C : SemiCategory j₁ j₂) where
      We are now ready to prove that a standard identity is an
      idempotent equivalence. -}
      
-  module std→idpt+eqv {y : Ob} (i : Hom y y) (std-id : is-standard-id i) where
+  module std→idpt+eqv {y : Ob} (i : Hom y y)
+                      (std-id : is-standard-id i) where
 
     l-ntrl = fst std-id
     r-ntrl = snd std-id
@@ -202,7 +205,8 @@ module _ {j₁ j₂} (C : SemiCategory j₁ j₂) where
      endomorphism `i` is an idempotent equivalence if and
      only if it is a standard identity. -}
 
-  idpt+eqv⇔std : ∀{y} → (i : Hom y y) → is-idpt+eqv i ⇔ is-standard-id i
+  idpt+eqv⇔std : ∀{y} → (i : Hom y y) →
+                        is-idpt+eqv i ⇔ is-standard-id i
   idpt+eqv⇔std i = (⇒ , ⇐)
     where
       ⇒ : is-idpt+eqv i → is-standard-id i
@@ -357,7 +361,8 @@ module _ {j₁ j₂} (C : SemiCategory j₁ j₂) where
      this by showing that, if we assume that this type has one 
      element i₀, then i₀ is the only element. -}
 
-  module unique (y : Ob) (i₀ : Hom y y) (idpt+eqv₀ : is-idpt+eqv i₀) where
+  module unique (y : Ob) (i₀ : Hom y y)
+                (idpt+eqv₀ : is-idpt+eqv i₀) where
 
     open I
     open e-vs-I
@@ -380,7 +385,10 @@ module _ {j₁ j₂} (C : SemiCategory j₁ j₂) where
       Σ (Hom y y) (λ i → Σ (is-eqv i) λ eqv → i == I i eqv)
         ≃⟨ Σ-emap-r (λ i → Σ-emap-r λ p → coe-equiv
              (ap (λ i' → (i == i')) (
-                 idpt+eqv-unique (I i p) i₀ (I-is-idpt+eqv i p) idpt+eqv₀))) ⟩ 
+                 idpt+eqv-unique (I i p)
+                                 i₀
+                                 (I-is-idpt+eqv i p)
+                                 idpt+eqv₀))) ⟩ 
       Σ (Hom y y) (λ i → Σ (is-eqv i) λ _ → i == i₀)
         ≃⟨ Σ-emap-r (λ i → ×-comm) ⟩
       Σ (Hom y y) (λ i → Σ (i == i₀) λ _ → (is-eqv i))
@@ -426,6 +434,9 @@ good-iff-standard C = ⇒ , ⇐
   ⇐ : is-standard-category C → is-good-category C
   ⇐ isc x = fst (isc x) , snd (idpt+eqv⇔std C _) (snd (isc x))
 
-goodness-is-prop : ∀ {j₁ j₂} (C : SemiCategory j₁ j₂) → is-prop (is-good-category C)
+goodness-is-prop : ∀ {j₁ j₂} (C : SemiCategory j₁ j₂) →
+                             is-prop (is-good-category C)
 goodness-is-prop C = inhab-to-contr-is-prop λ idpt+eqvs →
-  WeakFunext.weak-λ= λ y → unique.unique-idpt+eqv C y (fst(idpt+eqvs y)) (snd(idpt+eqvs y)) 
+  WeakFunext.weak-λ= λ y → unique.unique-idpt+eqv C y
+                                                  (fst (idpt+eqvs y))
+                                                  (snd (idpt+eqvs y)) 
