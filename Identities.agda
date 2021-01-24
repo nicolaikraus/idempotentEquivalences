@@ -3,6 +3,8 @@
                 complementing the paper
  Internal ∞-Categorical Models of Dependent Type Theory
 
+                  Nicolai Kraus, 2020
+
 Summary. The standard definition of a semicategory consists
 of objects, morphisms, composition, and associativity. How
 can we say that a given semicategory has identities, i.e. is
